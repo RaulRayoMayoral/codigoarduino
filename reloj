@@ -1,0 +1,245 @@
+#include <LiquidCrystal.h>
+#include <TimedAction.h>
+LiquidCrystal lcd(9,8,4,5,6,7);
+int keyIn;
+int pul_select = 11;
+int pul_conf= 12;
+int NUM_KEYS = 5;
+int key=-1;
+int oldkey=-1;
+char dia[7][10] = {"Lunes","Martes","Miercoles","Jueves","Viernes","Sabado","Domingo"};
+char mes[12][11] = { "Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"};
+char hourTime [24][5] = { 
+  "12am","1am","2am","3am","4am","5am","6am","7am","8am","9am","10am","11am",
+  "12pm","1pm","2pm","3pm","4pm","5pm","6pm","7pm","8pm","9pm","10pm","11pm" };
+byte DiaMes[12] = {31,28,31,30,31,30,31,31,30,31,30,31};
+char pregunta [6][16] = { "Selec.ano:","Selec.mes:","Sel.dia/fecha:","Selec.dia:","Selec.hora:","Selec. minuto:"};
+int qNum = 0;
+int tempVar = 0;
+int maxVar = 0;
+int minVar = 0;
+int delayTiempo = 3500;
+int startClock = 0;
+
+int selDia = 28;
+int selDiaSem = 4;
+int selMes = 5;
+int selAno = 2020;
+int selHora = 19;
+int selMin = 15;
+int secs = 0;
+String strMin = "";
+String strSecs = "";
+String strHora = "";
+String hora12 = "";
+String topLine = "";
+String botLine = "";
+String spaceChar = "";
+
+
+void setup() {
+pinMode (pul_select,INPUT);
+pinMode (pul_conf,INPUT);  
+  lcd.begin (16,2);
+  lcd.clear();
+  lcd.setCursor(1,0);
+  lcd.print("Credito Sintesis");
+  lcd.setCursor(0,1);
+  lcd.print("Rellotge/Calendari");
+  delay(delayTiempo);
+  lcd.clear();
+  PonerHora();
+  }
+TimedAction timer = TimedAction(1000,clockUpdate);
+  void PonerHora(){
+  delay(1000);  
+  for (qNum = 0; qNum < 6; qNum++)
+  {
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print(pregunta[qNum]);
+
+    keyIn = 0;
+    waitForSelect();
+  } 
+  lcd.clear();
+}
+
+void loop() {
+  if (startClock ==1 ) {timer.check();} 
+  if (digitalRead(pul_select)==LOW && digitalRead(pul_conf)==LOW){
+  PonerHora();
+  }
+
+} 
+
+void waitForSelect() {
+  switch (qNum) {
+  case 0: 
+    tempVar = selAno;  
+    maxVar = 2021; 
+    minVar = 2015; 
+    break;
+  case 1:
+    tempVar = selMes; 
+    maxVar = 12; 
+    minVar = 0; 
+    break;
+  case 2:
+    tempVar = selDiaSem; 
+    maxVar = DiaMes[selMes]; 
+    minVar = 1; 
+    break;
+  case 3:
+    tempVar = selDia; 
+    maxVar = 6; 
+    minVar = 0; 
+    break;
+  case 4:
+    tempVar = selHora; 
+    maxVar = 23; 
+    minVar = 0; 
+    break;
+  case 5:
+    tempVar = selMin; 
+    maxVar = 59; 
+    minVar = 0;
+  }
+
+  lcd.setCursor(0,1);
+  displayVars();
+
+  while (keyIn != 4) { 
+
+  
+if (digitalRead(pul_conf)==LOW) {
+  delay(300);
+      switch (qNum) {
+      case 0:
+        selAno = tempVar; 
+        break;
+      case 1:
+        selMes = tempVar; 
+        break;
+      case 2:
+        selDiaSem = tempVar; 
+        break;
+      case 3:
+        selDia = tempVar; 
+        break;
+      case 4:
+        selHora = tempVar; 
+        break;
+      case 5:
+        selMin = tempVar;
+        startClock = 1;
+      }
+      keyIn = 4;
+    } 
+
+if (digitalRead(pul_select) ==LOW) {
+  tempVar++;
+  if (tempVar> maxVar){
+    tempVar = minVar;
+    }
+    delay(200);
+  }      
+      lcd.setCursor(0,1);
+      displayVars();
+    }
+    delay(50);
+  }
+
+
+void displayVars() {
+  switch (qNum) {
+  case 0:
+    lcd.print(tempVar + spaceChar); 
+    break;
+  case 1:
+    lcd.print(mes[tempVar] + spaceChar); 
+    break;
+  case 2:
+    lcd.print(tempVar + spaceChar); 
+    break;
+  case 3:
+    lcd.print(dia[tempVar] + spaceChar); 
+    break;
+  case 4:
+    lcd.print(hourTime[tempVar] + spaceChar); 
+    break;
+  case 5:
+    lcd.print(tempVar + spaceChar);  
+  }        
+}
+
+void clockUpdate() {
+  secs++;
+  if (secs == 60) {
+    secs = 0;
+    selMin++;
+  }
+  if (selMin == 60) {
+    selMin = 0;
+    selHora++;
+  }
+  if (selHora == 24) {
+    selHora = 0;
+    selDia++;
+    if (selDia ==7) {
+      selDia = 0;
+    }
+    selDiaSem++;
+  }
+  if (selDiaSem > DiaMes[selMes]) {
+    selDiaSem = 1;
+    selMes++;
+    if (selMes == 12) {
+      selMes = 0; 
+      selAno++;
+    }
+  }    
+  if (secs < 10) {
+    strSecs = "0"+String(secs);
+  } 
+  else {
+    strSecs = String(secs);
+  }
+  if (selMin < 10) {
+    strMin = "0"+String(selMin);
+  } 
+  else {
+    strMin = String(selMin);
+  }
+  if (selHora < 12) {
+    hora12 = "am"; 
+    if (selHora==0) {
+      strHora = "12";
+    } 
+    else {
+      strHora = String(selHora);
+    }
+  } 
+  else { 
+    hora12 = "pm"; 
+    strHora = String(selHora); 
+  }
+  if (selHora > 12) {
+    strHora = String(selHora-12);
+  }
+  topLine = String(dia[selDia]).substring(0,3)+","+spaceChar+selDiaSem+spaceChar+String(mes[selMes]).substring(0,3)+spaceChar
+    +selAno+spaceChar;
+  botLine = strHora+":"+strMin+":"+strSecs+hora12+spaceChar;
+  lcd.setCursor(0,0);
+  lcd.print(topLine);
+  lcd.setCursor(3,1);
+  lcd.print(botLine);
+}
+  int get_key(unsigned int input) {
+  int k;
+  for (k = 0; k < NUM_KEYS; k++){
+      return k;
+    }   
+  if (k >= NUM_KEYS) k = -1; 
+  return k;
+}
