@@ -1,0 +1,102 @@
+ESTE ES EL BUENO RAUK
+#include <LiquidCrystal.h>
+LiquidCrystal lcd(9,8,4,5,6,7);
+int pulsador1=10;          
+int pulsador2=11;         
+int u_hora=1;             
+int u_minuto=4;           
+int u_segundo=0;          
+int d_hora=1;             
+int d_minuto=3;           
+int d_segundo=0;          
+unsigned long timer1=0;  
+unsigned long timer2=0;
+ 
+void setup (){
+  pinMode(pulsador1,INPUT);  
+  pinMode(pulsador2,INPUT);  
+  lcd.begin(16, 2);          
+  lcd.clear();
+  
+}
+void loop(){   
+ 
+  un_seg ();    
+   
+  contador();   
+   
+  escribe_hora();  
+   
+  set_hora();   
+   
+}
+   
+void un_seg(){    
+   
+timer2=(millis()/1000);    
+if ( timer1 != timer2 ) {
+ timer1=timer2;
+ u_segundo++;        
+ }     
+}
+ 
+void contador(){ //Reloj
+ 
+if ( u_segundo == 10 ) {
+u_segundo =0;
+d_segundo++;} 
+ 
+if ( ( d_segundo == 6 ) && ( u_segundo == 0 ) ) {
+d_segundo =0;
+u_minuto++;} 
+ 
+ 
+// Rutina de minutos
+ 
+if ( u_minuto == 10 ) {
+u_minuto =0;
+d_minuto++; } 
+ 
+if ( ( d_minuto == 6 ) && ( u_minuto == 0 ) ) {
+d_minuto =0;     
+u_hora++;} 
+// Rutina de horas
+ 
+if ( u_hora == 10 ) {
+u_hora =0;
+d_hora++; } 
+ 
+if ( (d_hora == 2) &&  (u_hora == 4) ) {
+u_hora =0; 
+d_hora =0; } 
+ 
+ 
+}
+   
+  void escribe_hora(){ 
+     
+  lcd.setCursor(1,0);  
+  lcd.print("Reloj Arduino"); 
+  lcd.setCursor(3, 1);  
+  lcd.print(d_hora);   
+  lcd.print(u_hora);    
+  lcd.print(":");        
+  lcd.print(d_minuto);  
+  lcd.print(u_minuto);  
+  lcd.print(":");        
+  lcd.print(d_segundo);  
+  lcd.print(u_segundo);  
+   
+  }
+   
+  void set_hora(){ //Rutina para subir en 1 las unidades de minuto y hora   
+  if(digitalRead(pulsador2)==LOW){    
+   u_minuto++;                        
+   delay (250);                        
+  }
+  if(digitalRead(pulsador1)==LOW){    
+   u_hora++;                          
+   delay(250);                        
+  }
+}
+
