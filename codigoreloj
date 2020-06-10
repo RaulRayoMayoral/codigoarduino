@@ -98,4 +98,51 @@ d_hora =0; }
    delay(250);                        
   }
 }
+#include <BotonSimple.h>
+
+const int pins[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
+
+BotonSimple botonSubir(8); 
+BotonSimple botonBajar(9); 
+unsigned long tiempoSecuencia;         
+unsigned long duracionSecuencia = 150; 
+int secuencia;  
+int incremento; 
+int i;
+void setup() {
+  for (i=0; i<8; i++) {
+    pinMode(pins[i], OUTPUT);
+    digitalWrite(pins[i], LOW);
+  }
+  secuencia=0;
+  incremento = +1;
+}
+
+void loop() {
+  botonSubir.actualizar();
+  botonBajar.actualizar();
+  if  (millis()-tiempoSecuencia> duracionSecuencia) {
+    for (i=0; i<8; i++) {
+      if (secuencia==i) {
+        digitalWrite(pins[i], HIGH);
+      }
+      else {
+        digitalWrite(pins[i], LOW);
+      }
+    }
+    secuencia+=incremento; 
+    if (secuencia==0) incremento=1;   
+    if (secuencia==7) incremento=-1;  
+    tiempoSecuencia = millis();
+  }
+  if (botonSubir.leer()==APRETANDOLO ) {
+    if (duracionSecuencia>10) duracionSecuencia-=10;
+  }
+  if ( botonBajar.leer()==APRETANDOLO) {
+    if (duracionSecuencia<2000) duracionSecuencia+=10;
+  }
+}
+
+
+
 
